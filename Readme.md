@@ -148,16 +148,16 @@ kubectl port-forward -n default svc/my-model 8000:8000
 To connect to the UI:
 
 ```
-kubectl port-forward -n default deploy/my-model-chat-app 8501:8501
+kubectl port-forward -n default deploy/my-model-chat-app 3000:3000
 ```
 
 Simply run the UI port-forward command.
 
 ```
-kubectl port-forward -n default deploy/my-model-chat-app 8501:8501
+kubectl port-forward -n default deploy/my-model-chat-app 3000:3000
 ```
 
-Then open your browser to `http://localhost:8501` to try the model via our quick chat app.
+Then open your browser to `http://localhost:3000` to try the model via our quick chat app.
 
 ![Chat UI](https://github.com/weave-ai/weave-ai/assets/10666/ff6e624e-90d5-42d9-9197-245619b1c4fa)
 

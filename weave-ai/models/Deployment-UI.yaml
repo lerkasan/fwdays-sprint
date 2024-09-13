@@ -21,9 +21,10 @@ spec:
         runAsNonRoot: true
       containers:
         - name: chat-app
-          image: ghcr.io/weave-ai/chatinfo:v0.2.0 # Replace <ImageChatInfo> with the actual image info
+          image: ghcr.io/open-webui/open-webui:main
+          # image: ghcr.io/weave-ai/chatinfo:v0.2.0 # Replace <ImageChatInfo> with the actual image info
           env:
-            - name: LLM_API_HOST
+            - name: OLLAMA_BASE_URL # LLM_API_HOST
               value: my-model.default.svc.cluster.local:8000  # Replace placeholders with actual values
           securityContext:
             privileged: false
@@ -33,6 +34,13 @@ spec:
               drop:
                 - ALL
           ports:
-            - containerPort: 8501
+            - containerPort: 8080 # 8501
               name: http
               protocol: TCP
+          volumeMounts:
+            - name: openwebui-data
+              mountPath: /app/backend/data
+      volumes:
+        - name: openwebui-data
+          persistentVolumeClaim:
+          claimName: openwebui-data

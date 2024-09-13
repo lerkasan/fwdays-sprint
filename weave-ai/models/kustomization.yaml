@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
 - Deployment-UI.yaml
 - LanguageModel.yaml
+- PersistentVolumeClaim-UI.yaml
