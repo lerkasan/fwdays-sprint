@@ -44,7 +44,7 @@ resource "github_repository" "this" {
   name        = var.github_repository
   description = var.github_repository
   visibility  = "private"
-  auto_init   = true 
+  auto_init   = true
 
   # Enable vulnerability alerts
   vulnerability_alerts = true
