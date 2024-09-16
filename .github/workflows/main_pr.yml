@@ -35,9 +35,12 @@ jobs:
           TF_VAR_github_token: ${{ secrets.FWDAYS_GITHUB_TOKEN }}
         run: terraform -chdir=tf-bootstrap plan -no-color -out=tfplan
 
+      - name: Save Terraform Plan Output to a File
+        run: terraform -chdir=tf-bootstrap show -no-color tfplan > plan.txt
+
       - name: Save Terraform Plan
         id: get_tf_plan
-        run: echo "tf_plan_output=$(terraform -chdir=tf-bootstrap show -no-color tfplan)" >> $GITHUB_OUTPUT
+        run: echo "tf_plan_output=$(cat plan.txt)" >> $GITHUB_OUTPUT
 
       - name: Comment PR with Terraform Plan output
         uses: actions/github-script@v6
@@ -52,8 +55,6 @@ jobs:
               body: process.env.TF_PLAN_OUTPUT
             })
 
-    #   - name: Save Terraform Plan
-    #     run: terraform -chdir=tf-bootstrap show -no-color tfplan > plan.txt
 
     #   - name: Comment Terraform Plan
     #     uses: marocchino/sticky-pull-request-comment@v2
