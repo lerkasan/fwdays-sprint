@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    name: Terraform Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@98637d7db679cd12b4ae373378e391551b922539                           # v3.5.3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8                  # v3.1.1
+        with:
+          terraform_version: 1.9.2
+
+      - name: Terraform Init
+        run: terraform -chdir=tf-bootstrap init
+
+      - name: Terraform Validate
+        run: terraform -chdir=tf-bootstrap validate
+
+      - name: Terraform Format Check
+        run: terraform -chdir=tf-bootstrap fmt -check -recursive
+
+      - name: Terraform Plan
+        env:
+          TF_VAR_github_org: ${{ vars.FWDAYS_GITHUB_ORG }}
+          TF_VAR_github_repo: ${{ vars.FWDAYS_GITHUB_REPO }}
+          TF_VAR_github_token: ${{ secrets.FWDAYS_GITHUB_TOKEN }}
+        run: terraform plan -no-color -out=tfplan
+
+      - name: Save Terraform Plan
+        run: terraform show -no-color tfplan > plan.txt
+
+      - name: Comment Terraform Plan
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: plan.txt
+
+      - name: "Upload Terraform Plan"
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-plan
+          path: tfplan
