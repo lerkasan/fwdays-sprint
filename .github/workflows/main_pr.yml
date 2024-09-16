@@ -40,7 +40,7 @@ jobs:
 
       - name: Save Terraform Plan
         id: get_tf_plan
-        run: echo "tf_plan_output=$(cat tf-bootstrap/plan.txt)" >> $GITHUB_OUTPUT
+        run: echo "tf_plan_output=$(cat plan.txt)" >> $GITHUB_OUTPUT
 
       - name: Comment PR with Terraform Plan output
         uses: actions/github-script@v6
