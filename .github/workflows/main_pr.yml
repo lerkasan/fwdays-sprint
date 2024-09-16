@@ -36,7 +36,7 @@ jobs:
         run: terraform -chdir=tf-bootstrap plan -no-color -out=tfplan
 
       - name: Save Terraform Plan
-        run: terraform show -no-color tfplan > plan.txt
+        run: terraform -chdir=tf-bootstrap show -no-color tfplan > plan.txt
 
       - name: Comment Terraform Plan
         uses: marocchino/sticky-pull-request-comment@v2
@@ -47,4 +47,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: terraform-plan
-          path: tfplan
+          path: tf-bootstrap/tfplan
