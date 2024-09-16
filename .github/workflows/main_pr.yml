@@ -31,7 +31,7 @@ jobs:
       - name: Terraform Plan
         env:
           TF_VAR_github_org: ${{ vars.FWDAYS_GITHUB_ORG }}
-          TF_VAR_github_repo: ${{ vars.FWDAYS_GITHUB_REPO }}
+          TF_VAR_github_repository: ${{ vars.FWDAYS_GITHUB_REPO }}
           TF_VAR_github_token: ${{ secrets.FWDAYS_GITHUB_TOKEN }}
         run: terraform -chdir=tf-bootstrap plan -no-color -out=tfplan
 
