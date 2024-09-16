@@ -36,12 +36,29 @@ jobs:
         run: terraform -chdir=tf-bootstrap plan -no-color -out=tfplan
 
       - name: Save Terraform Plan
-        run: terraform -chdir=tf-bootstrap show -no-color tfplan > plan.txt
+        id: get_tf_plan
+        run: echo "tf_plan_output=$(terraform -chdir=tf-bootstrap show -no-color tfplan)" >> $GITHUB_OUTPUT
 
-      - name: Comment Terraform Plan
-        uses: marocchino/sticky-pull-request-comment@v2
+      - name: Comment PR with Terraform Plan output
+        uses: actions/github-script@v6
+        env:
+          TF_PLAN_OUTPUT: ${{ steps.get_tf_plan.outputs.tf_plan_output }}
         with:
-          path: plan.txt
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: process.env.TF_PLAN_OUTPUT
+            })
+
+    #   - name: Save Terraform Plan
+    #     run: terraform -chdir=tf-bootstrap show -no-color tfplan > plan.txt
+
+    #   - name: Comment Terraform Plan
+    #     uses: marocchino/sticky-pull-request-comment@v2
+    #     with:
+    #       path: plan.txt
 
       - name: "Upload Terraform Plan"
         uses: actions/upload-artifact@v3
