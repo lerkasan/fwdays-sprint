@@ -46,7 +46,8 @@ jobs:
         uses: aquasecurity/trivy-action@0.24.0
         with:
           scan-type: 'config'
-          scan-ref: ${{ github.workspace }}/tf-bootstrap
+          scan-ref: tf-bootstrap
+        #   scan-ref: ${{ github.workspace }}/tf-bootstrap
           hide-progress: true
         #   exit-code: '1'
           ignore-unfixed: false
