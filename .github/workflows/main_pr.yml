@@ -22,8 +22,13 @@ jobs:
       - name: OpenTofu Init
         run: tofu -chdir=tf-bootstrap init
 
+    #   - name: OpenTofu Validate
+    #     run: tofu -chdir=tf-bootstrap validate
+
       - name: OpenTofu Validate
-        run: tofu -chdir=tf-bootstrap validate
+        uses: dflook/tofu-validate@v1
+        with:
+          path: tf-bootstrap
 
       - name: OpenTofu Format Check
         run: tofu -chdir=tf-bootstrap fmt -check -recursive
