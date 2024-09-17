@@ -46,6 +46,14 @@ jobs:
           quiet: true
         #   soft_fail: true
           download_external_modules: false
+          output_format: cli,sarif
+          output_file_path: console,checkov.sarif
+
+      - name: Upload Checkov SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: checkov.sarif
 
       - name: Run Trivy vulnerability scanner in fs mode
         uses: aquasecurity/trivy-action@0.24.0
@@ -57,6 +65,14 @@ jobs:
         #   exit-code: '1'
           ignore-unfixed: false
           severity: 'CRITICAL,HIGH'
+          format: 'sarif'
+          output: 'trivy.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: 'trivy.sarif'
 
       - name: OpenTofu Plan
         env:
@@ -120,6 +136,14 @@ jobs:
         uses: stackrox/kube-linter-action@v1.0.4
         with:
           directory: weave-ai
+          format: sarif
+          output-file: kube-linter.sarif
+
+      - name: Upload Kube-linter SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: kube-linter.sarif
 
       - name: Setup Golang
         uses: actions/setup-go@v5
