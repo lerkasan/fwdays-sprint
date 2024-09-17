@@ -57,6 +57,7 @@ resource "github_branch_protection" "this" {
   enforce_admins      = true
   allows_force_pushes = false
   allows_deletions    = false
+  require_signed_commits = true
 
   required_pull_request_reviews {
     dismiss_stale_reviews           = true

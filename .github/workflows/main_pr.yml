@@ -39,7 +39,7 @@ jobs:
         with:
           directory: tf-bootstrap
           quiet: true
-          soft_fail: true
+        #   soft_fail: true
           download_external_modules: false
 
       - name: Run Trivy vulnerability scanner in fs mode
