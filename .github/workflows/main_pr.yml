@@ -30,8 +30,13 @@ jobs:
         with:
           path: tf-bootstrap
 
+    #   - name: OpenTofu Format Check
+    #     run: tofu -chdir=tf-bootstrap fmt -check -recursive
+
       - name: OpenTofu Format Check
-        run: tofu -chdir=tf-bootstrap fmt -check -recursive
+        uses: dflook/tofu-fmt-check@v1
+        with:
+          path: tf-bootstrap
 
       - name: Run Checkov action
         id: checkov
@@ -85,7 +90,7 @@ jobs:
               body: process.env.TF_PLAN_OUTPUT
             })
 
-      - name: "Upload OpenTofu Plan"
+      - name: "Upload OpenTofu Plan as Artifact"
         uses: actions/upload-artifact@v4
         with:
           name: tofu-plan
