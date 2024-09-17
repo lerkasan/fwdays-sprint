@@ -6,41 +6,40 @@ on:
       - main
 
 jobs:
-  terraform:
-    name: Terraform Checks
+  tofu:
+    name: OpenTofu Checks
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@98637d7db679cd12b4ae373378e391551b922539                           # v3.5.3
+        uses: actions/checkout@v4
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8                  # v3.1.1
+      - name: Set up OpenTofu
+        uses: opentofu/setup-opentofu@v1
         with:
-          terraform_version: 1.9.2
+          tofu_version: 1.8.2
 
-      - name: Terraform Init
-        run: terraform -chdir=tf-bootstrap init
+      - name: OpenTofu Init
+        run: tofu -chdir=tf-bootstrap init
 
-      - name: Terraform Validate
-        run: terraform -chdir=tf-bootstrap validate
+      - name: OpenTofu Validate
+        run: tofu -chdir=tf-bootstrap validate
 
-      - name: Terraform Format Check
-        run: terraform -chdir=tf-bootstrap fmt -check -recursive
+      - name: OpenTofu Format Check
+        run: tofu -chdir=tf-bootstrap fmt -check -recursive
 
-      - name: Terraform Plan
+      - name: OpenTofu Plan
         env:
           TF_VAR_github_org: ${{ vars.FWDAYS_GITHUB_ORG }}
           TF_VAR_github_repository: ${{ vars.FWDAYS_GITHUB_REPO }}
           TF_VAR_github_token: ${{ secrets.FWDAYS_GITHUB_TOKEN }}
-        run: terraform -chdir=tf-bootstrap plan -no-color -out=tfplan
+        run: tofu -chdir=tf-bootstrap plan -no-color -out=tfplan
 
-      - name: Save Terraform Plan Output to a File
-        run: terraform -chdir=tf-bootstrap show -no-color tfplan > plan.txt
+      - name: Save OpenTofu Plan Output to a File
+        run: tofu -chdir=tf-bootstrap show -no-color tfplan > plan.txt
 
-      - name: Save Terraform Plan
+      - name: Save OpenTofu Plan
         id: get_tf_plan
-        # run: echo "tf_plan_output=$(cat plan.txt)" >> $GITHUB_OUTPUT
         run: |
           {
             echo 'tf_plan_output<<EOF'
@@ -48,8 +47,8 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
-      - name: Comment PR with Terraform Plan output
-        uses: actions/github-script@v6
+      - name: Comment PR with OpenTofu Plan output
+        uses: actions/github-script@v7
         env:
           TF_PLAN_OUTPUT: ${{ steps.get_tf_plan.outputs.tf_plan_output }}
         with:
@@ -61,14 +60,8 @@ jobs:
               body: process.env.TF_PLAN_OUTPUT
             })
 
-
-    #   - name: Comment Terraform Plan
-    #     uses: marocchino/sticky-pull-request-comment@v2
-    #     with:
-    #       path: plan.txt
-
-      - name: "Upload Terraform Plan"
-        uses: actions/upload-artifact@v3
+      - name: "Upload OpenTofu Plan"
+        uses: actions/upload-artifact@v4
         with:
-          name: terraform-plan
+          name: tofu-plan
           path: tf-bootstrap/tfplan
