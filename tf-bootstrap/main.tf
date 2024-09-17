@@ -50,6 +50,21 @@ resource "github_repository" "this" {
   vulnerability_alerts = true
 }
 
+resource "github_branch_protection" "this" {
+  repository_id = github_repository.this.id
+  pattern       = "main"
+
+  enforce_admins = true
+  allows_force_pushes = false
+  allows_deletions    = false
+
+  required_pull_request_reviews {
+    dismiss_stale_reviews           = true
+    require_code_owner_reviews      = true
+    required_approving_review_count = var.required_approving_review_count_for_main_branch
+  }
+}
+
 # ==========================================
 # Bootstrap Flux
 # ==========================================

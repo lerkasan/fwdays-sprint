@@ -13,3 +13,9 @@ variable "github_token" {
   sensitive   = true
   type        = string
 }
+
+variable "required_approving_review_count_for_main_branch" {
+  description = "required approving review count for mainbranch"
+  type        = number
+  default     = 2
+}
