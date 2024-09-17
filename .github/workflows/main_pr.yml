@@ -33,6 +33,24 @@ jobs:
       - name: OpenTofu Format Check
         run: tofu -chdir=tf-bootstrap fmt -check -recursive
 
+      - name: Run Checkov action
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: tf-bootstrap
+          quiet: true
+          soft_fail: true
+          download_external_modules: false
+
+      - name: Run Trivy vulnerability scanner in fs mode
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'config'
+          hide-progress: true
+        #   exit-code: '1'
+          ignore-unfixed: false
+          severity: 'CRITICAL,HIGH'
+
       - name: OpenTofu Plan
         env:
           TF_VAR_github_org: ${{ vars.FWDAYS_GITHUB_ORG }}
