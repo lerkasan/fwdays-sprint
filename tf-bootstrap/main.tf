@@ -54,9 +54,9 @@ resource "github_branch_protection" "this" {
   repository_id = github_repository.this.id
   pattern       = "main"
 
-  enforce_admins      = true
-  allows_force_pushes = false
-  allows_deletions    = false
+  enforce_admins         = true
+  allows_force_pushes    = false
+  allows_deletions       = false
   require_signed_commits = true
 
   required_pull_request_reviews {
