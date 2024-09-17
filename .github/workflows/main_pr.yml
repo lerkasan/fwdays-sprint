@@ -77,18 +77,18 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
-      - name: Comment PR with Checkov result output
-        uses: actions/github-script@v7
-        # env:
-        #   TF_PLAN_OUTPUT: ${{ steps.get_tf_plan.outputs.tf_plan_output }}
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: process.env.CHECKOV_RESULTS
-            })
+    #   - name: Comment PR with Checkov result output
+    #     uses: actions/github-script@v7
+    #     # env:
+    #     #   TF_PLAN_OUTPUT: ${{ steps.get_tf_plan.outputs.tf_plan_output }}
+    #     with:
+    #       script: |
+    #         github.rest.issues.createComment({
+    #           issue_number: context.issue.number,
+    #           owner: context.repo.owner,
+    #           repo: context.repo.repo,
+    #           body: process.env.CHECKOV_RESULTS
+    #         })
 
       - name: Comment PR with OpenTofu Plan output
         uses: actions/github-script@v7
@@ -115,3 +115,17 @@ jobs:
         with:
           name: tofu-plan
           path: tf-bootstrap/tfplan
+
+      - name: Scan repo with kube-linter
+        uses: stackrox/kube-linter-action@v1.0.4
+        with:
+          directory: weave-ai
+
+      - name: Setup Golang
+        uses: actions/setup-go@v5
+
+      - name: Setup Kubeconform
+        run: go install github.com/yannh/kubeconform/cmd/kubeconform@v0.6.7
+
+      - name: Run Flux validation script
+        run: curl https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/scripts/validate.sh | bash
