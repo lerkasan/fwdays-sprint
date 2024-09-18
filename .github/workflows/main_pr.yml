@@ -60,7 +60,7 @@ jobs:
         with:
           scan-type: 'fs'
         #   scan-type: 'config'
-          skip-dirs: 'weave-ai'
+        #   skip-dirs: 'weave-ai'
         #   scan-ref: tf-bootstrap
         #   scan-ref: ${{ github.workspace }}/tf-bootstrap
         #   hide-progress: true
