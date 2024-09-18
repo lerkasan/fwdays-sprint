@@ -59,7 +59,8 @@ jobs:
         uses: aquasecurity/trivy-action@0.24.0
         with:
           scan-type: 'config'
-          scan-ref: tf-bootstrap
+          skip-dirs: 'weave-ai'
+        #   scan-ref: tf-bootstrap
         #   scan-ref: ${{ github.workspace }}/tf-bootstrap
           hide-progress: true
         #   exit-code: '1'
