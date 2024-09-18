@@ -44,10 +44,26 @@ resource "github_repository" "this" {
   name        = var.github_repository
   description = var.github_repository
   visibility  = "private"
-  auto_init   = true 
+  auto_init   = true
 
   # Enable vulnerability alerts
   vulnerability_alerts = true
+}
+
+resource "github_branch_protection" "this" {
+  repository_id = github_repository.this.id
+  pattern       = "main"
+
+  enforce_admins         = true
+  allows_force_pushes    = false
+  allows_deletions       = false
+  require_signed_commits = true
+
+  required_pull_request_reviews {
+    dismiss_stale_reviews           = true
+    require_code_owner_reviews      = true
+    required_approving_review_count = var.required_approving_review_count_for_main_branch
+  }
 }
 
 # ==========================================

@@ -6,45 +6,156 @@ on:
       - main
 
 jobs:
-  terraform:
-    name: Terraform Checks
+  tofu:
+    name: OpenTofu Checks
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@98637d7db679cd12b4ae373378e391551b922539                           # v3.5.3
+        uses: actions/checkout@v4
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8                  # v3.1.1
+      - name: Set up OpenTofu
+        uses: opentofu/setup-opentofu@v1
         with:
-          terraform_version: 1.9.2
+          tofu_version: 1.8.2
 
-      - name: Terraform Init
-        run: terraform -chdir=tf-bootstrap init
+      - name: OpenTofu Init
+        run: tofu -chdir=tf-bootstrap init
 
-      - name: Terraform Validate
-        run: terraform -chdir=tf-bootstrap validate
+    #   - name: OpenTofu Validate
+    #     run: tofu -chdir=tf-bootstrap validate
 
-      - name: Terraform Format Check
-        run: terraform -chdir=tf-bootstrap fmt -check -recursive
+      - name: OpenTofu Validate
+        uses: dflook/tofu-validate@v1
+        with:
+          path: tf-bootstrap
 
-      - name: Terraform Plan
+    #   - name: OpenTofu Format Check
+    #     run: tofu -chdir=tf-bootstrap fmt -check -recursive
+
+      - name: OpenTofu Format Check
+        uses: dflook/tofu-fmt-check@v1
+        with:
+          path: tf-bootstrap
+
+      - name: Run Checkov action
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: tf-bootstrap
+          quiet: true
+        #   soft_fail: true
+          download_external_modules: false
+          output_format: cli,sarif
+          output_file_path: console,checkov.sarif
+
+      - name: Upload Checkov SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: checkov.sarif
+
+      - name: Run Trivy vulnerability scanner in fs mode
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+        #   scan-type: 'fs'
+          scan-type: 'config'
+        #   skip-dirs: 'weave-ai'
+        #   scan-ref: tf-bootstrap
+        #   scan-ref: ${{ github.workspace }}/tf-bootstrap
+        #   hide-progress: true
+        #   exit-code: '1'
+          ignore-unfixed: false
+          severity: 'CRITICAL,HIGH'
+        #   format: 'table'
+          format: 'sarif'
+          output: 'trivy.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: 'trivy.sarif'
+
+      - name: OpenTofu Plan
         env:
           TF_VAR_github_org: ${{ vars.FWDAYS_GITHUB_ORG }}
-          TF_VAR_github_repo: ${{ vars.FWDAYS_GITHUB_REPO }}
+          TF_VAR_github_repository: ${{ vars.FWDAYS_GITHUB_REPO }}
           TF_VAR_github_token: ${{ secrets.FWDAYS_GITHUB_TOKEN }}
-        run: terraform plan -no-color -out=tfplan
+        run: tofu -chdir=tf-bootstrap plan -no-color -out=tfplan
 
-      - name: Save Terraform Plan
-        run: terraform show -no-color tfplan > plan.txt
+      - name: Save OpenTofu Plan Output to a File
+        run: tofu -chdir=tf-bootstrap show -no-color tfplan > plan.txt
 
-      - name: Comment Terraform Plan
-        uses: marocchino/sticky-pull-request-comment@v2
+      - name: Save OpenTofu Plan as GitHub output
+        id: get_tf_plan
+        run: |
+          {
+            echo 'tf_plan_output<<EOF'
+            cat plan.txt
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+    #   - name: Comment PR with Checkov result output
+    #     uses: actions/github-script@v7
+    #     # env:
+    #     #   TF_PLAN_OUTPUT: ${{ steps.get_tf_plan.outputs.tf_plan_output }}
+    #     with:
+    #       script: |
+    #         github.rest.issues.createComment({
+    #           issue_number: context.issue.number,
+    #           owner: context.repo.owner,
+    #           repo: context.repo.repo,
+    #           body: process.env.CHECKOV_RESULTS
+    #         })
+
+      - name: Comment PR with OpenTofu Plan output
+        uses: actions/github-script@v7
+        env:
+          TF_PLAN_OUTPUT: ${{ steps.get_tf_plan.outputs.tf_plan_output }}
         with:
-          path: plan.txt
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: process.env.TF_PLAN_OUTPUT
+            })
 
-      - name: "Upload Terraform Plan"
-        uses: actions/upload-artifact@v3
+    #   - name: Comment PR with OpenTofu Plan output (using action)
+    #     uses: borchero/terraform-plan-comment@v2
+    #     with:
+    #       token: ${{ github.token }}
+    #       working-directory: tf-bootstrap
+    #       planfile: plan.txt
+
+      - name: "Upload OpenTofu Plan as Artifact"
+        uses: actions/upload-artifact@v4
         with:
-          name: terraform-plan
-          path: tfplan
+          name: tofu-plan
+          path: tf-bootstrap/tfplan
+
+
+
+
+    #   - name: Scan repo with kube-linter
+    #     uses: stackrox/kube-linter-action@v1.0.4
+    #     with:
+    #       directory: weave-ai
+    #       format: sarif
+    #       output-file: kube-linter.sarif
+
+    #   - name: Upload Kube-linter SARIF file
+    #     uses: github/codeql-action/upload-sarif@v3
+    #     if: success() || failure()
+    #     with:
+    #       sarif_file: kube-linter.sarif
+
+    #   - name: Setup Golang
+    #     uses: actions/setup-go@v5
+
+    #   - name: Setup Kubeconform
+    #     run: go install github.com/yannh/kubeconform/cmd/kubeconform@v0.6.7
+
+    #   - name: Run Flux validation script
+    #     run: curl https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/scripts/validate.sh | bash
