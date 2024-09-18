@@ -58,8 +58,8 @@ jobs:
       - name: Run Trivy vulnerability scanner in fs mode
         uses: aquasecurity/trivy-action@0.24.0
         with:
-          scan-type: 'fs'
-        #   scan-type: 'config'
+        #   scan-type: 'fs'
+          scan-type: 'config'
         #   skip-dirs: 'weave-ai'
         #   scan-ref: tf-bootstrap
         #   scan-ref: ${{ github.workspace }}/tf-bootstrap
